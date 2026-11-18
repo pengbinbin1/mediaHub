@@ -3,6 +3,7 @@ import os
 import sys
 
 from PySide6.QtCore import QSettings, Qt, QUrl
+from PySide6.QtNetwork import QLocalServer, QLocalSocket
 from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import (
     QApplication, QFileDialog, QFrame, QHBoxLayout, QLabel, QMainWindow,
@@ -185,11 +186,50 @@ class MainWindow(QMainWindow):
                     vp.setAcceptDrops(False)
 
 
+INSTANCE_KEY = "MiniHub-SingleInstance"
+
+
 def main():
     app = QApplication(sys.argv)
     app.setStyleSheet(GLOBAL_QSS + nav_button_qss())
+
+    # ---- 单实例检查：已有实例时通知它前置窗口，随后退出 ----
+    probe = QLocalSocket()
+    probe.connectToServer(INSTANCE_KEY)
+    if probe.waitForConnected(300):
+        payload = "\n".join(sys.argv[1:])
+        probe.write(payload.encode("utf-8"))
+        probe.waitForBytesWritten(300)
+        probe.disconnectFromServer()
+        return 0
+
+    # 本实例是第一个：创建本地服务器，接收后续实例的唤醒请求
+    QLocalServer.removeServer(INSTANCE_KEY)
+    server = QLocalServer()
+    server.listen(INSTANCE_KEY)
+
     win = MainWindow()
     win.show()
+
+    def _on_new_connection():
+        conn = server.nextPendingConnection()
+        if conn is None:
+            return
+        conn.waitForReadyRead(300)
+        payload = bytes(conn.readAll()).decode("utf-8", "ignore")
+        conn.disconnectFromServer()
+        conn.deleteLater()
+        # 后续实例若带文件路径参数，逐个打开
+        for path in payload.splitlines():
+            if path and os.path.exists(path):
+                win.open_file(path)
+        # 前置并激活已有窗口
+        win.showNormal()
+        win.raise_()
+        win.activateWindow()
+
+    server.newConnection.connect(_on_new_connection)
+
     sys.exit(app.exec())
 
 
