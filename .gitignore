@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# 虚拟环境
+.venv/
+venv/
+
+# PyInstaller 构建产物
+build/
+dist/
+
+# 安装包构建目录（含大体积 exe）
+installer_build/
+
+# 日志
+*.log
+
+# IDE
+.idea/
+.vscode/
+
+# 系统文件
+Thumbs.db
+.DS_Store
