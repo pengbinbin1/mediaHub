@@ -17,14 +17,14 @@ from app.pages.explorer import ExplorerPage
 from app.pages.home import HomePage
 from app.pages.image_viewer import ImagePage
 from app.pages.video import VideoPage
-from app.theme import GLOBAL_QSS
+from app.theme import GLOBAL_QSS, nav_button_qss
 
 NAV_ITEMS = [
-    ("home", "首页"),
-    ("video", "视频"),
-    ("image", "图片"),
-    ("explorer", "文件"),
-    ("docs", "文档"),
+    ("home", "首页", "🏠", "#4F6BFF"),     # 靛蓝
+    ("video", "视频", "🎬", "#8B5CF6"),    # 紫
+    ("image", "图片", "🖼️", "#10B981"),   # 绿
+    ("explorer", "文件", "📂", "#F59E0B"), # 橙
+    ("docs", "文档", "📄", "#06B6D4"),     # 青
 ]
 
 
@@ -67,15 +67,36 @@ class MainWindow(QMainWindow):
         side_lay.setContentsMargins(10, 18, 10, 14)
         side_lay.setSpacing(2)
 
-        brand = QLabel("极简媒体中心", objectName="AppTitle")
-        version = QLabel("MiniHub v1.0", objectName="AppVersion")
-        side_lay.addWidget(brand)
-        side_lay.addWidget(version)
+        # 品牌区：渐变圆形 logo + 标题
+        logo = QLabel("M")
+        logo.setFixedSize(36, 36)
+        logo.setAlignment(Qt.AlignCenter)
+        logo.setStyleSheet("""
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                        stop:0 #4F6BFF, stop:1 #8B5CF6);
+            color: #ffffff; font-size: 18px; font-weight: 800;
+            border-radius: 18px;
+        """)
+        brand = QLabel("MiniHub", objectName="AppTitle")
+        version = QLabel("极简媒体中心 · v1.0", objectName="AppVersion")
+
+        brand_row = QHBoxLayout()
+        brand_row.setContentsMargins(0, 0, 0, 0)
+        brand_row.setSpacing(10)
+        brand_row.addWidget(logo)
+        brand_col = QVBoxLayout()
+        brand_col.setContentsMargins(0, 0, 0, 0)
+        brand_col.setSpacing(0)
+        brand_col.addWidget(brand)
+        brand_col.addWidget(version)
+        brand_row.addLayout(brand_col)
+        side_lay.addLayout(brand_row)
         side_lay.addSpacing(14)
 
         self.nav_buttons = {}
-        for key, label in NAV_ITEMS:
-            btn = QPushButton(label, objectName="NavButton")
+        for key, label, icon, _accent in NAV_ITEMS:
+            btn = QPushButton(f"{icon}  {label}", objectName="NavButton")
+            btn.setProperty("navKey", key)
             btn.setCheckable(True)
             btn.setFocusPolicy(Qt.NoFocus)
             btn.clicked.connect(lambda checked=False, k=key: self.switch_page(k))
@@ -166,7 +187,7 @@ class MainWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    app.setStyleSheet(GLOBAL_QSS)
+    app.setStyleSheet(GLOBAL_QSS + nav_button_qss())
     win = MainWindow()
     win.show()
     sys.exit(app.exec())

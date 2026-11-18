@@ -7,17 +7,34 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QWidget,
 )
 
+from app.theme import (
+    ACCENT_DOCS, ACCENT_FILES, ACCENT_IMAGE, ACCENT_VIDEO, PRIMARY, qss_rgba,
+)
+
 
 class CardButton(QFrame):
-    """可点击的极简卡片。"""
+    """可点击的彩色卡片：圆底 emoji 图标 + 标题 + 描述。"""
 
-    def __init__(self, title: str, desc: str, on_click, parent=None):
+    def __init__(self, title: str, desc: str, on_click, icon: str = "📁",
+                 accent: str = PRIMARY, parent=None):
         super().__init__(parent, objectName="Card")
         self.on_click = on_click
         self.setCursor(Qt.PointingHandCursor)
         lay = QVBoxLayout(self)
         lay.setContentsMargins(18, 16, 18, 16)
         lay.setSpacing(4)
+
+        # 彩色圆底 emoji 图标
+        badge = QLabel(icon)
+        badge.setFixedSize(42, 42)
+        badge.setAlignment(Qt.AlignCenter)
+        badge.setStyleSheet(f"""
+            background: {qss_rgba(accent, 26)};
+            border: 1px solid {qss_rgba(accent, 60)};
+            border-radius: 21px;
+            font-size: 18px;
+        """)
+        lay.addWidget(badge)
         lay.addWidget(QLabel(title, objectName="CardTitle"))
         lay.addWidget(QLabel(desc, objectName="CardDesc"))
 
@@ -46,14 +63,14 @@ class HomePage(QWidget):
         cards_row = QHBoxLayout()
         cards_row.setSpacing(14)
         cards = [
-            ("打开文件…", "自动识别类型并打开", self._open_any),
-            ("视频播放", "播放 / 暂停 / 快进快退", lambda: router.switch_page("video")),
-            ("图片查看", "切换 / 旋转 / 缩放", lambda: router.switch_page("image")),
-            ("文件浏览", "浏览所有磁盘文件", lambda: router.switch_page("explorer")),
-            ("文档", "TXT · Word 编辑，PDF 查看", lambda: router.switch_page("docs")),
+            ("📁", PRIMARY, "打开文件…", "自动识别类型并打开", self._open_any),
+            ("🎬", ACCENT_VIDEO, "视频播放", "播放 / 暂停 / 快进快退", lambda: router.switch_page("video")),
+            ("🖼️", ACCENT_IMAGE, "图片查看", "切换 / 旋转 / 缩放", lambda: router.switch_page("image")),
+            ("📂", ACCENT_FILES, "文件浏览", "浏览所有磁盘文件", lambda: router.switch_page("explorer")),
+            ("📄", ACCENT_DOCS, "文档", "TXT · Word 编辑，PDF 查看", lambda: router.switch_page("docs")),
         ]
-        for t, d, fn in cards:
-            cards_row.addWidget(CardButton(t, d, fn))
+        for icon, accent, t, d, fn in cards:
+            cards_row.addWidget(CardButton(t, d, fn, icon=icon, accent=accent))
         root.addLayout(cards_row)
         root.addSpacing(10)
 
