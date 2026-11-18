@@ -2,7 +2,9 @@
 
 一个干净的 Windows 桌面应用：视频、图片、文件、多标签文档，一个应用搞定。
 
-![主界面截图](tools/app_screenshot.png)
+**[⬇ 下载安装包（GitHub Releases）](https://github.com/pengbinbin1/mediaHub/releases/latest)**
+
+![文档页多标签截图](tools/app_screenshot.png)
 
 ## 功能特性
 
